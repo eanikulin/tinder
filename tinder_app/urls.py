@@ -15,10 +15,15 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include, re_path
+from rest_framework.routers import DefaultRouter
+from main.views import UsersRegisterViewSet
 
+router = DefaultRouter()
+router.register(r'clients/create', UsersRegisterViewSet, basename='create')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include(router.urls)),
     path('api-auth/', include('rest_framework.urls')),
     path('api-tokauth/', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
