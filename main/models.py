@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from uuid import uuid4
+from .utils import watermark_photo
 
 
 class User(AbstractUser):
@@ -21,3 +22,8 @@ class User(AbstractUser):
         ordering = ('-pk',)
         verbose_name = 'Участник'
         verbose_name_plural = 'Участники'
+
+    def save(self, *args, **kwargs):
+        super().save()
+        if self.image:
+            watermark_photo(self.image.path)
