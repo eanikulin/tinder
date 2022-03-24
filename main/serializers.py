@@ -1,5 +1,6 @@
-from .models import User
+from .models import User, Likes
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class UsersRegisterSerializer(serializers.ModelSerializer):
@@ -20,3 +21,19 @@ class UsersRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("username", "password", "first_name", "last_name", "email", "gender", "image")
+
+
+class MatchSerializer(serializers.ModelSerializer):
+    initiator = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def validate(self, data):
+        if data['recipient'] == data['initiator']:
+            raise serializers.ValidationError('Ошибка, нельзя ставить лайк самому себе')
+        return data
+
+    class Meta:
+        model = Likes
+        fields = ('initiator', 'recipient')
+
+    validators = [
+        UniqueTogetherValidator(queryset=Likes.objects.all(), fields=['initiator', 'recipient'], message='Вы уже поставили лайк' )]

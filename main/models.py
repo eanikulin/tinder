@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from uuid import uuid4
-from .utils import watermark_photo
+from django.db.models import Q
+from .utils import watermark_photo, send_message
 
 
 class User(AbstractUser):
@@ -27,3 +28,23 @@ class User(AbstractUser):
         super().save()
         if self.image:
             watermark_photo(self.image.path)
+
+
+class Likes(models.Model):
+    initiator = models.ForeignKey(User, related_name='initiator_like', on_delete=models.CASCADE)
+    recipient = models.ForeignKey(User, related_name='recipient_like', on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ('-pk',)
+        verbose_name = 'Лайк'
+        verbose_name_plural = 'Лайки'
+
+    def save(self, *args, **kwargs):
+        super().save()
+        if Likes.objects.filter(Q(initiator=self.recipient, recipient=self.initiator) |
+                                Q(initiator=self.initiator, recipient=self.recipient)).exists():
+            send_message(self.initiator, self.recipient)
+            send_message(self.recipient, self.initiator)
+
+    def __str__(self):
+        return self.initiator.username + " -> " + self.recipient.username
