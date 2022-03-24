@@ -23,6 +23,12 @@ class UsersRegisterSerializer(serializers.ModelSerializer):
         fields = ("username", "password", "first_name", "last_name", "email", "gender", "image")
 
 
+class UsersListSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = ('first_name', 'last_name', 'gender')
+        model = User
+
+
 class MatchSerializer(serializers.ModelSerializer):
     initiator = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
@@ -36,4 +42,5 @@ class MatchSerializer(serializers.ModelSerializer):
         fields = ('initiator', 'recipient')
 
     validators = [
-        UniqueTogetherValidator(queryset=Likes.objects.all(), fields=['initiator', 'recipient'], message='Вы уже поставили лайк' )]
+        UniqueTogetherValidator(queryset=Likes.objects.all(), fields=['initiator', 'recipient'],
+                                message='Вы уже поставили лайк')]
