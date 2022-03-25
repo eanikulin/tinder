@@ -1,6 +1,7 @@
 from .models import User, Likes
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+from .utils import distance_users
 
 
 class UsersRegisterSerializer(serializers.ModelSerializer):
@@ -24,9 +25,15 @@ class UsersRegisterSerializer(serializers.ModelSerializer):
 
 
 class UsersListSerializer(serializers.ModelSerializer):
+    dist = serializers.SerializerMethodField()
+
     class Meta:
-        fields = ('first_name', 'last_name', 'gender')
+        fields = ('first_name', 'last_name', 'gender', 'dist')
         model = User
+
+    def get_dist(self, instance):
+        current_user = self.context['request'].user
+        return distance_users(current_user.longitude, current_user.latitude, instance.longitude, instance.latitude)
 
 
 class MatchSerializer(serializers.ModelSerializer):

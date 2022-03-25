@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from uuid import uuid4
-from django.db.models import Q
+# from django.db.models import Q
 from .utils import watermark_photo, send_message
 
 
@@ -15,6 +15,10 @@ class User(AbstractUser):
     email = models.EmailField(verbose_name='Электронная почта', unique=True)
     gender = models.CharField(verbose_name='пол', max_length=1, choices=GENDER_CHOICES, blank=True)
     image = models.ImageField(upload_to='users_images', blank=True, null=True)
+    longitude = models.DecimalField(verbose_name='Долгота', max_digits=30, decimal_places=16, default=0.0,
+                                    blank=True, null=True)
+    latitude = models.DecimalField(verbose_name='Широта', max_digits=30, decimal_places=16, default=0.0,
+                                   blank=True, null=True)
 
     def __str__(self):
         return self.last_name + " " + self.first_name
@@ -41,8 +45,7 @@ class Likes(models.Model):
 
     def save(self, *args, **kwargs):
         super().save()
-        if Likes.objects.filter(Q(initiator=self.recipient, recipient=self.initiator) |
-                                Q(initiator=self.initiator, recipient=self.recipient)).exists():
+        if Likes.objects.filter(initiator=self.recipient, recipient=self.initiator).exists():
             send_message(self.initiator, self.recipient)
             send_message(self.recipient, self.initiator)
 
